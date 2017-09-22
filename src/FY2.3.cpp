@@ -1,9 +1,8 @@
 //============================================================================
-// Name        : 3.cpp
 // Author      : Thiago Benazzi Maia
 // Version     :
 // Copyright   : 
-// Description : Hello World in C++, Ansi-style
+// TODO: Alterar array the posicao para numero, criar array the velocidade e aceleracao
 //============================================================================
 
 #include <iostream>
@@ -13,9 +12,11 @@
 #include <cppconn/resultset.h>
 #include <cppconn/prepared_statement.h>
 #include <cppconn/statement.h>
+#include <map>
+#include <vector>
+#include <math.h>
 
 using namespace std;
-
 
 //public double Evaluate (int i, int ii, double distance, double bondDistance)
 //	{
@@ -45,31 +46,41 @@ using namespace std;
 //		}
 //	}
 
-//IEnumerator startSimulation ()
-//	{
-//		int looprint = 0;
-//		LabelStatus.text = "Running";
-//		if (equation1.text != "") {
-//			e = new Expression (equation1.text);
-//		}
-//		if (equationBond.text != "") {
-//			eBond = new Expression (equationBond.text);
-//		}
-//		// Fazendo backup do array
-//		int duration = 1000000000;
-//		int duration_count = 0;
-//		if (loop == 0) {
-//			for (int i = 0; i < objetos; i++) {
-//				for (int ii = 0; ii < 2; ii++) {
-//					particulaPositionOriginal [i, ii] = particulaPosition [i, ii];
-//					particulaVelocidadeOriginal [i, ii] = particulaVelocidade [i, ii];
+void computeAccelerations() {
+//		particulaAceleracao = new double[objetosmax, 3];
+//		double distance;
+//		double force;
+//		for (int i = 0; i < objetos; i++) {
+//			for (int ii = 0; ii < objetos; ii++) {
+//				if (i == ii || particulaMorta [i]) {
+//					continue;
+//				}
+//				distance = show_distance (i, ii);
+//				if (bondEquation1 [i, ii] == 0 && equation1.text != "") {
+//					force = Evaluate (i, ii, distance, 0);
+//					particulaAceleracao [i, 0] += (particulaPosition [i, 0] - particulaPosition [ii, 0]) * force / distance;
+//					particulaAceleracao [i, 1] += (particulaPosition [i, 1] - particulaPosition [ii, 1]) * force / distance;
+//					particulaAceleracao [i, 2] += (particulaPosition [i, 2] - particulaPosition [ii, 2]) * force / distance;
+//				} else if (bondEquation1 [i, ii] > 0) {
+//					if ((i == 1 && ii == 2) || (i == 2 && ii == 1)) {
+//						print ("Nao 2");
+//					}
+//					force = Evaluate (i, ii, distance, bondEquation1 [i, ii]);
+//					particulaAceleracao [i, 0] += (particulaPosition [i, 0] - particulaPosition [ii, 0]) * force / distance;
+//					particulaAceleracao [i, 1] += (particulaPosition [i, 1] - particulaPosition [ii, 1]) * force / distance;
+//					particulaAceleracao [i, 2] += (particulaPosition [i, 2] - particulaPosition [ii, 2]) * force / distance;
 //				}
 //			}
 //		}
+}
+
+void startSimulation(string equation, int combination[], string particulaType[], string particulaPosition[][3]) {
+	cout << "startSimulation:" << equation << "/" << combination[0] << "/" << combination[1] << "/" << combination[2] << "\n";
+//		int looprint = 0;
 //		while (!pause) {
 //			loop++;
 //			duration_count++;
-//			computeAccelerations ();
+	computeAccelerations(&particulaPosition);
 //			for (int i = 0; i < objetos; i++) {
 //				particulaPosition [i, 0] += particulaVelocidade [i, 0] * deltaT + 0.5 * particulaAceleracao [i, 0] * deltaT * deltaT;
 //				particulaPosition [i, 1] += particulaVelocidade [i, 1] * deltaT + 0.5 * particulaAceleracao [i, 1] * deltaT * deltaT;
@@ -153,40 +164,12 @@ using namespace std;
 //			}
 //		}
 //		yield return null;
-//	}
+}
 
-//void computeAccelerations ()
-//	{
-//		particulaAceleracao = new double[objetosmax, 3];
-//		double distance;
-//		double force;
-//		for (int i = 0; i < objetos; i++) {
-//			for (int ii = 0; ii < objetos; ii++) {
-//				if (i == ii || particulaMorta [i]) {
-//					continue;
-//				}
-//				distance = show_distance (i, ii);
-//				if (bondEquation1 [i, ii] == 0 && equation1.text != "") {
-//					force = Evaluate (i, ii, distance, 0);
-//					particulaAceleracao [i, 0] += (particulaPosition [i, 0] - particulaPosition [ii, 0]) * force / distance;
-//					particulaAceleracao [i, 1] += (particulaPosition [i, 1] - particulaPosition [ii, 1]) * force / distance;
-//					particulaAceleracao [i, 2] += (particulaPosition [i, 2] - particulaPosition [ii, 2]) * force / distance;
-//				} else if (bondEquation1 [i, ii] > 0) {
-//					if ((i == 1 && ii == 2) || (i == 2 && ii == 1)) {
-//						print ("Nao 2");
-//					}
-//					force = Evaluate (i, ii, distance, bondEquation1 [i, ii]);
-//					particulaAceleracao [i, 0] += (particulaPosition [i, 0] - particulaPosition [ii, 0]) * force / distance;
-//					particulaAceleracao [i, 1] += (particulaPosition [i, 1] - particulaPosition [ii, 1]) * force / distance;
-//					particulaAceleracao [i, 2] += (particulaPosition [i, 2] - particulaPosition [ii, 2]) * force / distance;
-//				}
-//			}
-//		}
-//	}
 
 
 void load_job(int jobid) {
-	printf("Vendo quantidade de modelos: %d\n", jobid);
+	printf("Vendo quantidade de modelos B: %d\n", jobid);
 	try {
 		sql::Driver *driver;
 		sql::Connection *con;
@@ -195,27 +178,164 @@ void load_job(int jobid) {
 		driver = get_driver_instance();
 		con = driver->connect("tcp://127.0.0.1:3306", "fyequation", "testando");
 		con->setSchema("fyequation");
-		pstmt = con->prepareStatement("SELECT particle_id, particle_type FROM job_particles WHERE job_id="+jobid);
+		pstmt = con->prepareStatement("SELECT particle_id, particle_type, x, y, z FROM job_particles WHERE job_id = ?");
+		pstmt->setInt(1, jobid);
 		res = pstmt->executeQuery();
+
+		string particulaPosition[res->rowsCount()][3];
+		string particulaType[res->rowsCount()];
+		int count = 0;
 		while (res->next()) {
-			printf("Propriedade %d\n",res->getInt(1));
-//			resultado_local = load_protein_position(PDBID, res->getString(1), 1);
-//			if (calculated_pdb_min == 0) {
-//				calculated_pdb_min = resultado_local;
-//				calculated_pdb_max = resultado_local;
-//			} else {
-//				if (resultado_local < calculated_pdb_min) {
-//					calculated_pdb_min = resultado_local;
-//				}
-//				if (resultado_local > calculated_pdb_max) {
-//					calculated_pdb_max = resultado_local;
-//				}
-//			}
+			particulaType[count] = res->getString("particle_type");
+			particulaPosition[count][0] = res->getString("x");
+			particulaPosition[count][1] = res->getString("y");
+			particulaPosition[count][2] = res->getString("z");
 		}
 		delete res;
 		delete pstmt;
+
+		// Coletando constantes e atomic properties
+		pstmt = con->prepareStatement("SELECT CONCAT('P:1:',id), 0 FROM atoms_properties UNION ALL SELECT CONCAT('P:2:',id), 0 FROM atoms_properties UNION ALL SELECT CONCAT('C:',id), value FROM constants");
+		res = pstmt->executeQuery();
+		string constants[res->rowsCount()][2];
+		string propriedades[res->rowsCount() + 1] = { };
+		// The first is for the distance
+		int contador_propriedades = 0;
+		map<int, map<string, string>> list_properties;
+		list_properties[0]["name"] = "D";
+		list_properties[0]["value"] = "0";
+		while (res->next()) {
+			contador_propriedades++;
+			list_properties[contador_propriedades]["name"] = res->getString(1).c_str();
+			list_properties[contador_propriedades]["value"] = res->getString(2).c_str();
+		}
+
+		delete res;
+		delete pstmt;
+
+		// Getting the equations
+		pstmt = con->prepareStatement("SELECT equation FROM equations WHERE id=?");
+		pstmt->setInt(1, 1);
+		res = pstmt->executeQuery();
+		string equation = "";
+		while (res->next()) {
+			equation = res->getString(1).c_str();
+		}
+
+		delete res;
+		delete pstmt;
+
+		printf("Equation %s\n", equation.c_str());
+		int contX = 0;
+		for (unsigned int i = 0; i < equation.length(); i++) {
+			if (equation[i] == 'X') {
+				contX++;
+			}
+		}
+		cout << contX << "\n";
+
+		int combination[contX] = { 0 };
+		cout << pow(contador_propriedades, contX) << "\n";
+		int count_stop = 0;
+		cout << "Realizar combinacao de " << contador_propriedades << "\n";
+		for (int ic = 0; ic < pow(contador_propriedades + 1, contX); ic++) {
+			bool last_increase = true;
+			if (ic > 0) {
+				for (int ii = contX - 1; ii >= 0 && last_increase == true; ii--) {
+					if (combination[ii] == contador_propriedades) {
+						combination[ii] = 0;
+						last_increase = true;
+					} else {
+						combination[ii] = combination[ii] + 1;
+						last_increase = false;
+					}
+				}
+			}
+			bool have_distance = false;
+			bool have_p1 = false;
+			bool have_p2 = false;
+			for (int ii = 0; ii < contX; ii++) {
+				if (list_properties[combination[ii]]["name"] == "D") {
+					have_distance = true;
+				} else if (list_properties[combination[ii]]["name"].substr(0, 3) == "P:1") {
+					have_p1 = true;
+				} else if (list_properties[combination[ii]]["name"].substr(0, 3) == "P:2") {
+					have_p2 = true;
+				}
+			}
+			if (have_distance == true && have_p1 == true && have_p2 == true) {
+				count_stop++;
+				for (int ii = 0; ii < contX; ii++) {
+					if (list_properties[combination[ii]]["value"] != "0") {
+						cout << "[V" << list_properties[combination[ii]]["value"] << "]";
+					} else {
+						cout << "[" << list_properties[combination[ii]]["name"] << "]";
+					}
+				}
+				cout << "\n";
+				cout << "before:" << equation << "/" << combination[0] << "/" << combination[1] << "\n";
+				startSimulation(equation, combination, particulaType, particulaPosition);
+				if (count_stop >= 1) break;
+			}
+		}
+		cout << "Final\n";
+//		vector<int> index, imits;
+//		std::vector<function> functions;
+//		//omitting initializations
+//		while (1){
+//			functions[0]();
+//			index[0]++;
+//			for (int a=0;a<index.size()-1;a++){
+//				if (index[a]==limits[a]){
+//					index[a]=0;
+//					functions[a+1]();
+//					index[a+1]++;
+//				}else
+//					break;
+//			}
+//			if (index.back())
+//				break;
+//		}
+
+// coletando quantidade de atomos diferentes
+//		pstmt =
+//				con->prepareStatement(
+//						"SELECT COUNT(DISTINCT(particle_type)) FROM job_particles WHERE job_id=?");
+//		pstmt->setInt(1, jobid);
+//		res = pstmt->executeQuery();
+//		map<string, map<int, string>> atom_properties;
+
+// Coletando informacoes sobre atomos
+//		pstmt = con->prepareStatement(
+//				"SELECT id, atom, description, value FROM atoms");
+//		pstmt->setInt(1, jobid);
+//		res = pstmt->executeQuery();
+//
+//		delete res;
+//		delete pstmt;
+
+//		string particulaAceleracao[res->rowsCount()][3];
+//		string particulaPosition[res->rowsCount()][3];
+//		string particulaType[res->rowsCount()];
+//		int count = 0;
+//		while (res->next()) {
+//			printf("Propriedade %d\n", res->getInt(1));
+//			particulaType[count] = res->getString("particle_type");
+//
+//			particulaAceleracao[count][0] = "0";
+//			particulaAceleracao[count][1] = "0";
+//			particulaAceleracao[count][2] = "0";
+//
+//			particulaPosition[count][0] = res->getString("x");
+//			particulaPosition[count][1] = res->getString("y");
+//			particulaPosition[count][2] = res->getString("z");
+//		}
+//		delete res;
+//		delete pstmt;
+//
+//		id | atom | description | value | unit
+
 		delete con;
-//		printf("MINMAX %f %f\n", calculated_pdb_min, calculated_pdb_max);
 	} catch (sql::SQLException &e) {
 		printf("%d\n", e.getErrorCode());
 	}
@@ -223,6 +343,12 @@ void load_job(int jobid) {
 
 int main() {
 	cout << "Carregando job" << endl;
-	load_job(1);
+	try {
+		load_job(1);
+	} catch (...) {
+		printf("Erro\n");
+		//		printf("%s",e);
+	}
+
 	return 0;
 }
